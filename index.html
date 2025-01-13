@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家計簿アプリ</title>
+    <script>
+        // 支出追加関数
+        function addExpense() {
+            const name = document.getElementById("expenseName").value;
+            const amount = parseFloat(document.getElementById("expenseAmount").value);
+            const date = document.getElementById("expenseDate").value;
+
+            if (name && amount && date) {
+                const expense = {
+                    name: name,
+                    amount: amount,
+                    date: date
+                };
+
+                fetch('/api/add-expense', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(expense)
+                }).then(response => response.text())
+                  .then(data => {
+                      alert(data);
+                      loadExpenses();  // 支出一覧を再ロード
+                  });
+            } else {
+                alert("すべてのフィールドを入力してください");
+            }
+        }
+
+        // 支出一覧を取得して表示する関数
+        function loadExpenses() {
+            fetch('/api/expenses')
+                .then(response => response.json())
+                .then(expenses => {
+                    const list = document.getElementById("expenseList");
+                    list.innerHTML = '';
+                    expenses.forEach(expense => {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = `${expense.name} - ¥${expense.amount} - ${expense.date}`;
+                        list.appendChild(listItem);
+                    });
+                });
+        }
+
+        // ページ読み込み時に支出一覧をロード
+        window.onload = loadExpenses;
+    </script>
+</head>
+<body>
+    <h1>家計簿アプリ</h1>
+
+    <div>
+        <h2>支出を追加</h2>
+        <input type="text" id="expenseName" placeholder="支出名">
+        <input type="number" id="expenseAmount" placeholder="金額">
+        <input type="date" id="expenseDate">
+        <button onclick="addExpense()">追加</button>
+    </div>
+
+    <div>
+        <h2>支出一覧</h2>
+        <ul id="expenseList">
+            <!-- 支出一覧がここに表示されます -->
+        </ul>
+    </div>
+</body>
+</html>
